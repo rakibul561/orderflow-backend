@@ -1,16 +1,15 @@
 import compression from "compression";
 import cors from "cors";
-import express from "express";
-import { UserRoutes } from "./app/modules/user/user.route";
+import express, { Application } from "express";
+import config from "./config";
 import router from "./app/routes";
+import { WebhookRoutes } from "./app/modules/webhook/webhool.route";
+import cookieParser from "cookie-parser";
 
-const app = express();
+const app: Application = express();
+app.use(cookieParser());
 
-// Middleware
-app.use(cors()); // Enables Cross-Origin Resource Sharing
-app.use(compression()); // Compresses response bodies for faster delivery
-app.use(express.json()); // Parse incoming JSON requests
-
+// ✅ CORS
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -18,16 +17,28 @@ app.use(
   })
 );
 
+// ✅ Compression
+app.use(compression());
 
-app.use("/api/v1", router);
-
-// Default route for testing
-app.get("/", (_req, res) => {
-  res.json({ success: true, message: "API is running" });
+// ✅ Root route (JSON parser er AAGE)
+app.get("/", (req, res) => {
+  console.log("✅ Root route HIT!");
+  res.json({
+    success: true,
+    message: "Welcome to the OrderFlow Backend!",
+  });
 });
 
+// ✅ Webhook routes
+app.use("/api/v1/webhooks", WebhookRoutes);
 
-// 404 Handler
+// ✅ JSON parser
+app.use(express.json());
+
+// ✅ API routes
+app.use("/api/v1", router);
+
+// ✅ 404 Handler
 app.use((req, res, next) => {
   res.status(404).json({
     success: false,
@@ -35,4 +46,4 @@ app.use((req, res, next) => {
   });
 });
 
-export default app;
+export default app; // ✅ app export, server na

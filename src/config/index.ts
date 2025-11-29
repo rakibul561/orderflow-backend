@@ -17,5 +17,7 @@ export default {
      
     },
     salt_round: process.env.SALT_ROUND,
-   
+    stripe_secret_key: process.env.STRIPE_SECRET_KEY,
+    frontendUrl: process.env.FORTEND_URL,
+    webhook_secret: process.env.WEBHOOK_SECRET,   
 }

@@ -1,6 +1,8 @@
 
  import  express  from 'express';
 import { AuthController } from './auth.controller';
+import auth from '../../middlewares/auth';
+import { Role } from '@prisma/client';
  
   
  
