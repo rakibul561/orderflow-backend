@@ -27,4 +27,10 @@ router.get(
   chatController.getChatHistory
 );
 
+router.delete(
+  '/clear',
+  auth(Role.USER, Role.ADMIN), 
+  chatController.clearChatHistory
+);
+
 export const ChatbotRoutes = router;

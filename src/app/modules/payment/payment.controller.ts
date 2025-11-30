@@ -9,7 +9,7 @@ import config from "../../../config";
 
 
 const handleStripeWebhookEvent = catchAsync(async (req: Request, res: Response) => {
-    console.log("🎯 Controller reached!"); // Add this
+    console.log("🎯 Controller reached!"); 
     
     const sig = req.headers["stripe-signature"] as string;
     const webhookSecret = config.webhook_secret as string;
@@ -17,7 +17,7 @@ const handleStripeWebhookEvent = catchAsync(async (req: Request, res: Response) 
     let event;
     try {
         event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-        console.log("✅ Event verified:", event.type); // Add this
+    
     } catch (err: any) {
         console.error("⚠️ Webhook signature verification failed:", err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);

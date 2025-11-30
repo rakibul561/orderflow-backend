@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IUpdateOrderStatusRequest, ICreateOrderRequest } from './order.interface';
+import {  ICreateOrderRequest } from './order.interface';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { prisma } from '../../../config/prisma';
@@ -16,7 +16,10 @@ interface IAuthUser {
 }
 
 
-
+interface IUpdateOrderStatusRequest {
+    id: string;
+    orderStatus: "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED";
+}
 
 const createOrder = async (
     orderData: ICreateOrderRequest,
@@ -62,7 +65,7 @@ const createOrder = async (
 
             const userEmail = user?.email;
 
-                            const session = await stripe.checkout.sessions.create({
+               const session = await stripe.checkout.sessions.create({
                 payment_method_types: ["card"],
                 mode: "payment",
                 line_items: [
@@ -86,7 +89,7 @@ const createOrder = async (
                 });
                 
 
-                console.log("📦 Metadata sent:", session.metadata); 
+                
                 paymentData = {
                 paymentUrl: session.url,
                sessionId: session.id,
@@ -107,14 +110,6 @@ const createOrder = async (
     };
 };
 
-
-
-
-
-
-
-
-
 const getUserOrders = async (req: Request) => {
     const userId = req.user?.id;
 
@@ -130,39 +125,13 @@ const getUserOrders = async (req: Request) => {
     return orders;
 };
 
-const getOrderById = async (req: Request) => {
-    const { id } = req.params;
-    const userId = req.user?.id;
-
-    if (!userId) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'User not authenticated');
-    }
-
+export const updateOrderStatus = async ({ id, orderStatus }: IUpdateOrderStatusRequest) => {
     const order = await prisma.order.findUnique({
         where: { id },
     });
 
     if (!order) {
-        throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
-    }
-
-    if (order.userId !== userId && req.user?.role !== 'admin') {
-        throw new AppError(httpStatus.FORBIDDEN, 'Access denied');
-    }
-
-    return order;
-};
-
-const updateOrderStatus = async (req: Request) => {
-    const { id } = req.params;
-    const { orderStatus } = req.body as IUpdateOrderStatusRequest;
-
-    const order = await prisma.order.findUnique({
-        where: { id },
-    });
-
-    if (!order) {
-        throw new AppError(httpStatus.NOT_FOUND, 'Order not found');
+        throw new AppError(httpStatus.NOT_FOUND, "Order not found");
     }
 
     const updatedOrder = await prisma.order.update({
@@ -170,49 +139,11 @@ const updateOrderStatus = async (req: Request) => {
         data: { orderStatus },
     });
 
-    io.to(order.userId).emit('orderUpdate', {
+   
+    io.to(order.userId).emit("orderUpdate", {
         orderId: order.id,
         orderStatus,
-        message: `আপনার order এর status "${orderStatus}" তে পরিবর্তিত হয়েছে`,
-    });
-
-    return updatedOrder;
-};
-
-const handleStripePaymentSuccess = async (
-    orderId: string,
-    userId: string
-) => {
-    const updatedOrder = await prisma.order.update({
-        where: { id: orderId },
-        data: {
-            paymentStatus: 'PAID',
-            orderStatus: 'PROCESSING',
-        },
-    });
-
-    io.to(userId).emit('orderUpdate', {
-        orderId,
-        paymentStatus: 'PAID',
-        orderStatus: 'PROCESSING',
-        message: 'payment successful. Your order is now processing.',
-    });
-
-    return updatedOrder;
-};
-
-const handlePaymentFailure = async (orderId: string, userId: string) => {
-    const updatedOrder = await prisma.order.update({
-        where: { id: orderId },
-        data: {
-            paymentStatus: 'FAILED',
-        },
-    });
-
-    io.to(userId).emit('orderUpdate', {
-        orderId,
-        paymentStatus: 'FAILED',
-        message: 'payment failed or canceled.',
+        message: `Order status updated to "${orderStatus}" by admin.`,
     });
 
     return updatedOrder;
@@ -259,12 +190,12 @@ const getAllOrders = async (req: Request) => {
     };
 };
 
+
+
 export const OrderService = {
     createOrder,
     getUserOrders,
-    getOrderById,
     updateOrderStatus,
-    handleStripePaymentSuccess,
-    handlePaymentFailure,
+
     getAllOrders,
 };

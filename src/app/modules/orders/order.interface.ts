@@ -8,11 +8,11 @@ export interface IOrderItem {
 
 export interface ICreateOrderRequest {
     items: IOrderItem[];
-    paymentMethod: 'STRIPE' | 'PAYPAL'; // uppercase
+    paymentMethod: 'STRIPE' | 'PAYPAL'; 
 }
 
 export interface IUpdateOrderStatusRequest {
-    orderStatus: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED'; // uppercase
+    orderStatus: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED'; 
 }
 
 export interface IOrder {

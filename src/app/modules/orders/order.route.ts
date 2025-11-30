@@ -7,36 +7,30 @@ import { Role } from '@prisma/client';
 
 const router = express.Router();
 
-// ✅ Auth middleware enable kora holo
+
 router.post(
     '/',
-    auth( Role.USER), // ✅ Uncommented
+    auth( Role.USER), 
     validateRequest(OrderValidation.createOrderValidation),
     OrderController.createOrder
 );
 
 router.get(
     '/my-orders',
-    auth('user', 'admin'),
+    auth(Role.USER),
     OrderController.getUserOrders
 );
 
-router.get(
-    '/:id',
-    auth('user', 'admin'),
-    OrderController.getOrderById
-);
 
 router.get(
     '/',
-    auth('admin'),
+    auth(Role.ADMIN),
     OrderController.getAllOrders
 );
 
 router.patch(
     '/:id/status',
-    auth('admin'),
-    validateRequest(OrderValidation.updateOrderStatusValidation),
+    auth(Role.ADMIN),
     OrderController.updateOrderStatus
 );
 

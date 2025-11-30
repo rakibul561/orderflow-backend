@@ -1,20 +1,26 @@
 import compression from "compression";
 import cors from "cors";
 import express, { Application } from "express";
-import config from "./config";
+
 import router from "./app/routes";
 
 import cookieParser from "cookie-parser";
 import globalErrorHandler from "./app/middlewares/globalErrorHandler";
 import notFound from "./app/middlewares/notFound";
 
-import bodyParser from 'body-parser';
+
 import { PaymentController } from "./app/modules/payment/payment.controller";
 
 const app: Application = express();
 app.use(cookieParser());
+ 
+ 
+app.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  PaymentController.handleStripeWebhookEvent
+);
 
-// ✅ CORS
 app.use(
   cors({
     origin: "http://localhost:3000",
@@ -22,10 +28,8 @@ app.use(
   })
 );
 
-// ✅ Compression
 app.use(compression());
 
-// ✅ Root route (JSON parser er AAGE)
 app.get("/", (req, res) => {
   console.log("✅ Root route HIT!");
   res.json({
@@ -37,16 +41,7 @@ app.get("/", (req, res) => {
 
 
 
-app.post(
-    "/webhook",
-    express.raw({ type: "application/json" }),
-    (req, res, next) => {
-        console.log("🔥 WEBHOOK ROUTE HIT!");
-        console.log("Headers:", req.headers);
-        next();
-    },
-    PaymentController.handleStripeWebhookEvent
-);
+
 
 // ✅ JSON parser
 app.use(express.json());

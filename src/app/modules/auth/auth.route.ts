@@ -10,7 +10,9 @@ import { Role } from '@prisma/client';
  
   const router = express.Router();
  
-  router.post("/", AuthController.login);
+  router.post("/login", AuthController.login);
+
+  router.post("/logout", AuthController.logout)
  
  
  
