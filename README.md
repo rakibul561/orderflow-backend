@@ -103,13 +103,9 @@ JWT_EXPIRES_IN=7d
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
 
-# PayPal (Optional)
-PAYPAL_CLIENT_ID=your_paypal_client_id
-PAYPAL_CLIENT_SECRET=your_paypal_client_secret
-PAYPAL_MODE=sandbox
 
 # AI Chatbot
-HUGGINGFACE_API_KEY=hf_your_huggingface_api_token
+OPEN_ROUTER_API_KEY=hf_your_huggingface_api_token
 
 # Frontend URL (for CORS)
 CLIENT_URL=http://localhost:3000
@@ -292,14 +288,6 @@ Content-Type: application/json
 3. **Backend**: Stripe webhook confirms payment
 4. **Backend**: Update order status & notify via Socket.io
 
-### PayPal Flow
-
-1. **Frontend**: Create order → Get `approvalUrl`
-2. **User**: Redirected to PayPal → Completes payment
-3. **Backend**: PayPal webhook confirms payment
-4. **Backend**: Update order status & notify via Socket.io
-
----
 
 ## 🔌 Socket.io Events
 
