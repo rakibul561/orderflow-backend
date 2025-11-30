@@ -34,17 +34,17 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
               orderStatus: updatedOrder.orderStatus,
               message: "Payment successful! Your order is being processed.",
             });
-            console.log(`📡 Notification sent to user: ${userId}`); 
+           
           }
         } catch (error) {
-          console.error("❌ Error updating order:", error);
+          
           throw error;
         }
       }
       break;
 
     case "checkout.session.expired":
-      console.log("⚠️ Payment session expired!");
+     
       
       if (event.data.object.metadata?.orderId) {
         await prisma.order.update({
@@ -58,7 +58,7 @@ const handleStripeWebhookEvent = async (event: Stripe.Event) => {
       break;
 
     case "payment_intent.payment_failed":
-      console.log("❌ Payment failed!");
+    
       break;
 
     default:

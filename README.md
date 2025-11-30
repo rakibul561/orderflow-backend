@@ -322,7 +322,7 @@ const socket = io('http://localhost:5000', {
 ```javascript
 socket.on('orderUpdate', (data) => {
   console.log('Order updated:', data);
-  // { orderId: '123', orderStatus: 'shipped', paymentStatus: 'paid' }
+  
 });
 ```
 
@@ -335,23 +335,6 @@ socket.on('paymentSuccess', (data) => {
 
 ---
 
-## 🤖 AI Chatbot
-
-### Using HuggingFace API
-
-The chatbot uses **google/flan-t5-base** model (free):
-
-```typescript
-// Example integration
-const response = await fetch(
-  'https://api-inference.huggingface.co/models/google/flan-t5-base',
-  {
-    headers: { Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}` },
-    method: 'POST',
-    body: JSON.stringify({ inputs: userMessage })
-  }
-);
-```
 
 ### Alternative Free AI Models
 - DeepSeek Free API
@@ -399,15 +382,6 @@ stripe trigger payment_intent.succeeded
 
 ## 🚀 Deployment
 
-### Deploy to Render
-
-1. Create account on [Render](https://render.com)
-2. Connect GitHub repository
-3. Create **Web Service**
-4. Set environment variables
-5. Build command: `npm install && npx prisma generate && npm run build`
-6. Start command: `npm start`
-
 
 
 ## 📮 Postman Collection
@@ -435,27 +409,12 @@ npm run test:coverage
 
 ---
 
-## 🐳 Docker (Bonus)
-
-### Build & Run
-```bash
-docker-compose up --build
-```
-
----
-
-## 📝 License
-
-MIT License - feel free to use this project!
-
----
-
 ## 👨‍💻 Author
 
 **Your Name**  
 📧 Email: devrakib2@gmail.com  
-🔗 GitHub: [@yourusername](https://github.com/rakibul561)  
-🔗 LinkedIn: [Your LinkedIn](https://www.linkedin.com/in/rakibul-hasan-b94123271/)
+🔗 GitHub: [@https://github.com/rakibul561](https://github.com/rakibul561)  
+🔗 LinkedIn: [https://www.linkedin.com/in/rakibul-hasan-b94123271/](https://www.linkedin.com/in/rakibul-hasan-b94123271/)
 
 ---
 
@@ -467,9 +426,5 @@ MIT License - feel free to use this project!
 - Prisma for amazing ORM
 
 ---
-
-## 📞 Support
-
-If you have any questions, please open an issue or contact me directly.
 
 **Happy Coding! 🎉**

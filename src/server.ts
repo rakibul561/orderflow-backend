@@ -30,7 +30,7 @@ async function startServer() {
 
     // ✅ Initialize Socket.io
     initializeSocket(server);
-    console.log("⚡️ Socket.io initialized successfully!");
+
 
     // ✅ Server listen
     const port = process.env.PORT || 5000;
