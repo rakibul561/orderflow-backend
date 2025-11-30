@@ -164,7 +164,7 @@ Server will run on: `http://localhost:5000`
 
 #### Register User
 ```http
-POST /api/user/create-user
+POST /api/v1/user/create-user
 Content-Type: application/json
 
 {
@@ -176,7 +176,7 @@ Content-Type: application/json
 
 #### Login
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -204,7 +204,7 @@ Content-Type: application/json
 
 #### Create Order
 ```http
-POST /api/orders
+POST /api/v1/orders
 Authorization: Bearer <token>
 Content-Type: application/json
 
@@ -238,15 +238,11 @@ Content-Type: application/json
 
 #### Get User Orders
 ```http
-GET /api/orders
+GET api/v1/orders/my-orders
 Authorization: Bearer <token>
 ```
 
-#### Get Order Details
-```http
-GET /api/orders/:orderId
-Authorization: Bearer <token>
-```
+
 
 ---
 
@@ -269,7 +265,7 @@ Content-Type: application/json
 
 #### Chat with AI
 ```http
-POST /api/chatbot
+POST /api/v1/open-ai/chat
 Content-Type: application/json
 
 {
