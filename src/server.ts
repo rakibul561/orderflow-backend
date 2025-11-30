@@ -1,23 +1,22 @@
 import http, { Server } from "http";
 import express from "express";
-import app from "./app"; // ✅ Now correctly imports app
+import app from "./app";
 import dotenv from "dotenv";
 import { prisma } from "./config/prisma";
-import { Server as SocketIOServer } from "socket.io";
-import { jwtHelper } from "./app/helper/jwtHelper";
 import config from "./config";
+import { initializeSocket } from "./app/utils/socket";
+// ✅ socket setup import করো
 
 dotenv.config();
 
 let server: Server | null = null;
-let io: SocketIOServer | null = null;
 
 async function connectDb() {
   try {
     await prisma.$connect();
-    console.log("*** database connected successfully!!");
+    console.log("*** Database connected successfully!!");
   } catch (error) {
-    console.log("*** Db connection failed!!");
+    console.log("*** Database connection failed!!");
     process.exit(1);
   }
 }
@@ -29,53 +28,14 @@ async function startServer() {
     // ✅ HTTP server create
     server = http.createServer(app);
 
-    // ✅ Socket.io setup
-    io = new SocketIOServer(server, {
-      cors: {
-        origin: "http://localhost:3000",
-        credentials: true,
-      },
-    });
-
-    // ✅ Socket.io authentication
-    io.use((socket, next) => {
-      const token = socket.handshake.auth.token || socket.handshake.query.token;
-
-      if (!token) {
-        return next(new Error("Authentication error: Token missing"));
-      }
-
-      try {
-        const decoded = jwtHelper.verifyToken(
-          token as string,
-          config.jwt.jwt_secret as string
-        );
-
-        socket.data.userId = decoded.id;
-        socket.data.role = decoded.role;
-        next();
-      } catch (error) {
-        next(new Error("Authentication error: Invalid token"));
-      }
-    });
-
-    // ✅ Socket.io connection
-    io.on("connection", (socket) => {
-      const userId = socket.data.userId;
-
-      if (userId) {
-        socket.join(userId);
-        console.log(`✅ User ${userId} connected to Socket.io`);
-      }
-
-      socket.on("disconnect", () => {
-        console.log(`❌ User ${userId} disconnected from Socket.io`);
-      });
-    });
+    // ✅ Initialize Socket.io
+    initializeSocket(server);
+    console.log("⚡️ Socket.io initialized successfully!");
 
     // ✅ Server listen
-    server.listen(process.env.PORT, () => {
-      console.log(`🚀 Server is running on port ${process.env.PORT}`);
+    const port = process.env.PORT || 5000;
+    server.listen(port, () => {
+      console.log(`🚀 Server is running on port ${port}`);
     });
 
     handleProcessEvents();
@@ -87,12 +47,6 @@ async function startServer() {
 
 async function gracefulShutdown(signal: string) {
   console.warn(`🔄 Received ${signal}, shutting down gracefully...`);
-
-  if (io) {
-    io.close(() => {
-      console.log("✅ Socket.io closed.");
-    });
-  }
 
   if (server) {
     server.close(async () => {
@@ -128,8 +82,5 @@ function handleProcessEvents() {
   });
 }
 
-// Export io for use in other files
-export { io };
-
-// Start the application
+// ✅ Start Application
 startServer();

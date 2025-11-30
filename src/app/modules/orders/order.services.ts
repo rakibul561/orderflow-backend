@@ -6,11 +6,17 @@ import { prisma } from '../../../config/prisma';
 import { PaymentService } from '../payment/payment.services';
 import { io } from '../../utils/socket';
 
+import config from '../../../config';
+import { stripe } from '../../helper/stripe';
+
 
 interface IAuthUser {
     id: string;
     role: string;
 }
+
+
+
 
 const createOrder = async (
     orderData: ICreateOrderRequest,
@@ -19,13 +25,11 @@ const createOrder = async (
     const { items, paymentMethod } = orderData;
     const userId = user?.id;
 
-   
-
     if (!userId) {
         throw new AppError(httpStatus.UNAUTHORIZED, 'User not authenticated');
     }
 
-    // ১. মোট টাকা হিসাব করা
+
     const totalAmount = items.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
@@ -35,11 +39,11 @@ const createOrder = async (
         throw new AppError(httpStatus.BAD_REQUEST, 'Total amount must be greater than 0');
     }
 
-    // ২. Database এ order তৈরি করা
+
     const order = await prisma.order.create({
         data: {
             userId,
-            items: items as any, 
+            items: items as any,
             totalAmount,
             paymentMethod,
             paymentStatus: 'PENDING',
@@ -47,30 +51,63 @@ const createOrder = async (
         },
     });
 
-    console.log("✅ Service - Order Created:", order);
 
-   
+
     let paymentData = null;
-
     if (paymentMethod === 'STRIPE') {
-        paymentData = await PaymentService.createStripePaymentIntent(
-            order.id,
-            totalAmount,
-            userId
-        );
-    } else if (paymentMethod === 'PAYPAL') {
-        paymentData = await PaymentService.createPayPalOrder(
-            order.id,
-            totalAmount,
-            userId
-        );
+        try {
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+            });
+
+            const userEmail = user?.email;
+
+                            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                mode: "payment",
+                line_items: [
+                    {
+                    price_data: {
+                        currency: "bdt",
+                        product_data: {
+                        name: `Customer ${userEmail}`,
+                        },
+                        unit_amount: Math.round(totalAmount * 100),
+                    },
+                    quantity: 1,
+                    },
+                ],
+                metadata: {
+                    orderId: order.id?.toString(), 
+                    userId: userId?.toString(),    
+                },
+                success_url: `${config.frontendUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+                cancel_url: `${config.frontendUrl}/payment/cancel`,
+                });
+                
+
+                console.log("📦 Metadata sent:", session.metadata); 
+                paymentData = {
+                paymentUrl: session.url,
+               sessionId: session.id,
+};
+
+        } catch (error: any) {
+            throw new AppError(
+                httpStatus.BAD_REQUEST,
+                `Stripe payment failed: ${error.message}`
+            );
+        }
     }
 
+    
     return {
         order,
         payment: paymentData,
     };
 };
+
+
 
 
 
@@ -158,7 +195,7 @@ const handleStripePaymentSuccess = async (
         orderId,
         paymentStatus: 'PAID',
         orderStatus: 'PROCESSING',
-        message: 'আপনার payment সফল হয়েছে! Order processing শুরু হয়েছে।',
+        message: 'payment successful. Your order is now processing.',
     });
 
     return updatedOrder;
@@ -175,7 +212,7 @@ const handlePaymentFailure = async (orderId: string, userId: string) => {
     io.to(userId).emit('orderUpdate', {
         orderId,
         paymentStatus: 'FAILED',
-        message: 'আপনার payment ব্যর্থ হয়েছে। আবার চেষ্টা করুন।',
+        message: 'payment failed or canceled.',
     });
 
     return updatedOrder;

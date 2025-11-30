@@ -24,6 +24,7 @@
     "http": "^0.0.1-security",
     "http-status": "^2.1.0",
     "jsonwebtoken": "^9.0.2",
+    "openai": "^6.9.1",
     "socket.io": "^4.8.1",
     "stripe": "^20.0.0",
     "ts-node-dev": "^2.0.0",
